@@ -1,0 +1,70 @@
+--- fs.c	2018-11-28 11:47:24.000000000 -0600
++++ fs-o.c	2018-09-02 07:33:55.000000000 -0500
+@@ -223,6 +223,7 @@
+ {
+   struct buf *bp;
+   struct dinode *dip;
++
+   bp = bread(ip->dev, IBLOCK(ip->inum, sb));
+   dip = (struct dinode*)bp->data + ip->inum%IPB;
+   dip->type = ip->type;
+@@ -304,7 +305,6 @@
+     ip->nlink = dip->nlink;
+     ip->size = dip->size;
+     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
+-    //memmove(ip->data, dip->data, sizeof(ip->data));
+     brelse(bp);
+     ip->valid = 1;
+     if(ip->type == 0)
+@@ -461,27 +461,12 @@
+       return -1;
+     return devsw[ip->major].read(ip, dst, n);
+   }
+-  if(ip->type == T_SMALL) {
+-     //cprintf("Read from small file\n");
+-     if (off > ip->size || off + n <off)
+-        return -1;
+-     if (off + n > ip->size)
+-        n = ip->size - off;
+-     //cprintf("off : %d\n", off);
+-     for (int i = off; i<off + n; i++) {
+-     memmove(dst + (i-off), ip->addrs + i%64, 1);
+-     }
+-     off = off + n;
+-     //cprintf("off + n: %d\n", off);
+-     return n;
+-  } 
+   
+   if(off > ip->size || off + n < off)
+     return -1;
+   if(off + n > ip->size)
+     n = ip->size - off;
+ 
+-  
+   for(tot=0; tot<n; tot+=m, off+=m, dst+=m){
+     bp = bread(ip->dev, bmap(ip, off/BSIZE));
+     m = min(n - tot, BSIZE - off%BSIZE);
+@@ -511,22 +496,6 @@
+   if(off + n > MAXFILE*BSIZE)
+     return -1;
+ 
+-  if (ip->type == T_SMALL) {
+-     //cprintf("Write to small file\n");
+-     if(off + n > 64 || ip->size + n > 64)
+-       return -1;
+-     //cprintf("off :%d\n", off);
+-     //cprintf("src :%s\n", src);
+-     for (int i = off; i < off+n; i++) {
+-        memmove(ip->addrs + i%64, src+(i-off), 1);
+-     }
+-     //cprintf("%s\n", ip->addrs + off%64);
+-     off=off + n;
+-     //cprintf("off + n: %d\n", off);
+-     ip->size = off;
+-     iupdate(ip);
+-     return n;
+-  } 
+   for(tot=0; tot<n; tot+=m, off+=m, src+=m){
+     bp = bread(ip->dev, bmap(ip, off/BSIZE));
+     m = min(n - tot, BSIZE - off%BSIZE);
+

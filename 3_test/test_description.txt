@@ -1,0 +1,15 @@
+Small file test:
+file_test creates a small file, writes data less than 64 bytes, and then reads the small file. 
+
+Normal file test:
+file_test1 creates a normal file, writes something into it and then reads the normal file.
+
+Error test:
+file_test2 creats a small file, but tries to write data that is bigger than 64 bytes.
+
+file_test3
+read data bytes is bigger than the actual file data size, return the actual size of file data 
+
+
+The above four tests include small file test, normal file test, error test and read with bigger size test. 
+They cover every situation, so they are good tests.
